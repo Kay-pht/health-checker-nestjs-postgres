@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { CompletionModule } from './completion/completion.module';
+import { OpenaiModule } from './openai/openai.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [CompletionModule, OpenaiModule, ConfigModule.forRoot()],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
