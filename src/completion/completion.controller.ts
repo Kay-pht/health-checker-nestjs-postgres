@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CompletionService } from './completion.service';
+import { CreateResultDto } from './dto/create-result.dto';
 
 @Controller('completion')
 export class CompletionController {
@@ -11,7 +12,9 @@ export class CompletionController {
   }
 
   @Post()
-  analyzeAnswer(@Body('answer') answer: string): Promise<string | null> {
+  analyzeAnswer(
+    @Body('answer') answer: string,
+  ): Promise<CreateResultDto | null> {
     return this.completionService.getAnalysis(answer);
   }
 }

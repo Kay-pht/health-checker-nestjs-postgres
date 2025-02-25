@@ -13,31 +13,42 @@ export class OpenaiService {
     }),
   ): Promise<string | null> {
     // TODO:connect openai api
-    try {
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        temperature: 1.5,
-        messages: this.prompt(userPrompt),
-      });
-      console.log(completion);
-      const responseFromAI = completion.choices[0].message.content;
-      console.log(responseFromAI);
-      return responseFromAI;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 1.5,
+      messages: this.prompt(
+        this.configService.get('ROLE_PROMPT')!,
+        this.configService.get('TASK_PROMPT')!,
+        userPrompt,
+      ),
+    });
+    const responseFromAI = completion.choices[0].message.content;
+    return responseFromAI;
   }
 
-  prompt = (userPrompt: string): ChatCompletionMessageParam[] => {
+  prompt = (
+    userPrompt: string,
+    rolePrompt: string,
+    taskPrompt: string,
+  ): ChatCompletionMessageParam[] => {
     return [
       {
         role: 'system',
-        content: 'you are a helpful assistant',
+        content: rolePrompt || 'assistant',
       },
       {
         role: 'user',
-        content: userPrompt,
+        content: taskPrompt || 'hello',
+      },
+
+      {
+        role: 'system',
+        content: '指示に従い,フォーマットに沿ってすべての項目に回答します。',
+      },
+
+      {
+        role: 'user',
+        content: JSON.stringify(userPrompt),
       },
     ];
   };
