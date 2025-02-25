@@ -1,21 +1,20 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { CompletionService } from './completion.service';
 import { CreateResultDto } from './dto/create-result.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { Request as ExpressRequest } from 'express';
+import { RequestUser } from 'src/types/requestUser';
 
 @Controller('completion')
 export class CompletionController {
   constructor(private readonly completionService: CompletionService) {}
 
-  @Get()
-  getHello(): string {
-    return 'Hello World!';
-  }
-
   @Post()
+  @UseGuards(AuthGuard('jwt'))
   postAnalyzeAnswer(
     @Body('answer') answer: string,
-    @Body('userId') userId: string,
+    @Request() req: ExpressRequest & { user: RequestUser },
   ): Promise<CreateResultDto | null> {
-    return this.completionService.getAnalysis(answer, userId);
+    return this.completionService.getAnalysis(answer, req.user.id);
   }
 }

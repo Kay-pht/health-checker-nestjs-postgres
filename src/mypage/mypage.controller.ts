@@ -1,12 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { MypageService } from './mypage.service';
 import { HistoryDto } from 'src/completion/dto/history.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('mypage')
 export class MypageController {
   constructor(private readonly mypageService: MypageService) {}
 
   @Get()
+  @UseGuards(AuthGuard('jwt'))
   async getMypageData(): Promise<HistoryDto[]> {
     try {
       const mypageData = await this.mypageService.getHistory();
