@@ -22,6 +22,9 @@ model Result {
   updatedAt        DateTime @updatedAt @db.Timestamp()
   userId           String   @db.Uuid
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model User {
@@ -32,4 +35,6 @@ model User {
   createdAt DateTime @default(now()) @db.Timestamp()
   updatedAt DateTime @updatedAt @db.Timestamp()
   Result    Result[]
+
+  @@index([email])
 }
