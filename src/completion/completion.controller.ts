@@ -12,7 +12,7 @@ export class CompletionController {
   }
 
   @Post()
-  analyzeAnswer(
+  postAnalyzeAnswer(
     @Body('answer') answer: string,
   ): Promise<CreateResultDto | null> {
     return this.completionService.getAnalysis(answer);

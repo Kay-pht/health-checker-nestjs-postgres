@@ -34,7 +34,11 @@ export class CompletionService {
         },
       });
 
-      return savedResult;
+      return {
+        missingNutrients: savedResult.missingNutrients,
+        recommendedFoods: savedResult.recommendedFoods,
+        score: savedResult.score,
+      };
     } catch (error) {
       console.error('error', error);
       throw error;
