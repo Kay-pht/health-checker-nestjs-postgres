@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { CreateResultDto } from 'src/completion/dto/create-result.dto';
+import { HistoryDto } from 'src/completion/dto/history.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MypageService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getHistory(): Promise<CreateResultDto[]> {
+  async getHistory(): Promise<HistoryDto[]> {
     const historyResults = await this.prismaService.result.findMany({
       take: 10,
       orderBy: {

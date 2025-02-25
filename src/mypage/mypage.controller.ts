@@ -1,13 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { MypageService } from './mypage.service';
-import { CreateResultDto } from 'src/completion/dto/create-result.dto';
+import { HistoryDto } from 'src/completion/dto/history.dto';
 
 @Controller('mypage')
 export class MypageController {
   constructor(private readonly mypageService: MypageService) {}
 
   @Get()
-  async getMypageData(): Promise<CreateResultDto[]> {
+  async getMypageData(): Promise<HistoryDto[]> {
     try {
       const mypageData = await this.mypageService.getHistory();
       return mypageData;
