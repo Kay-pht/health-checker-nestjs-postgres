@@ -6,10 +6,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ResultService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getResultById(id: string): Promise<CreateResultDto> {
+  async getResultById(id: string, userId: string): Promise<CreateResultDto> {
     const targetResult = await this.prismaService.result.findUnique({
       where: {
         id,
+        userId,
       },
     });
     if (!targetResult) {

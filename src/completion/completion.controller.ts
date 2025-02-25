@@ -15,6 +15,6 @@ export class CompletionController {
     @Body('answer') answer: string,
     @Request() req: ExpressRequest & { user: RequestUser },
   ): Promise<CreateResultDto | null> {
-    return this.completionService.getAnalysis(answer, req.user.id);
+    return this.completionService.getAnalysis(answer, req.user.userId);
   }
 }

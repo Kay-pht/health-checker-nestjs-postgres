@@ -6,8 +6,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class MypageService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getHistory(): Promise<HistoryDto[]> {
+  async getHistory(userId: string): Promise<HistoryDto[]> {
     const historyResults = await this.prismaService.result.findMany({
+      where: {
+        userId,
+      },
       take: 10,
       orderBy: {
         createdAt: 'desc',
