@@ -21,4 +21,15 @@ export class ResultService {
       score: targetResult.score,
     };
   }
+  // async delete(): Promise<{ count: number }> {
+  //   const result = await this.prismaService.result.deleteMany({
+  //     where: {
+  //       userId: undefined,
+  //     },
+  //   });
+  //   if (!result) {
+  //     throw new NotFoundException();
+  //   }
+  //   return result;
+  // }
 }

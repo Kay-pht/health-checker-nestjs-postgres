@@ -6,6 +6,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { MypageModule } from './mypage/mypage.module';
 import { ResultModule } from './result/result.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ResultModule } from './result/result.module';
     PrismaModule,
     MypageModule,
     ResultModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [PrismaService],

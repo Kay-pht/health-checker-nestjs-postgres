@@ -20,4 +20,16 @@ model Result {
   score            Int
   createdAt        DateTime @default(now()) @db.Timestamp()
   updatedAt        DateTime @updatedAt @db.Timestamp()
+  userId           String   @db.Uuid
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.Timestamp()
+  updatedAt DateTime @updatedAt @db.Timestamp()
+  Result    Result[]
 }

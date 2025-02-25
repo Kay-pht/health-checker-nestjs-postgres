@@ -14,7 +14,8 @@ export class CompletionController {
   @Post()
   postAnalyzeAnswer(
     @Body('answer') answer: string,
+    @Body('userId') userId: string,
   ): Promise<CreateResultDto | null> {
-    return this.completionService.getAnalysis(answer);
+    return this.completionService.getAnalysis(answer, userId);
   }
 }

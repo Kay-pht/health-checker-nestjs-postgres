@@ -18,4 +18,14 @@ export class ResultController {
       throw error;
     }
   }
+  // @Delete('delete')
+  // async deleteResult(): Promise<{ count: number }> {
+  //   try {
+  //     const result = await this.resultService.delete();
+  //     return result;
+  //   } catch (error) {
+  //     console.error('Error fetching result:', error);
+  //     throw error;
+  //   }
+  // }
 }

@@ -11,7 +11,10 @@ export class CompletionService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  async getAnalysis(prompt: string): Promise<CreateResultDto | null> {
+  async getAnalysis(
+    prompt: string,
+    userId: string,
+  ): Promise<CreateResultDto | null> {
     // TODO:completionFunc
     try {
       const response: string | null =
@@ -31,6 +34,7 @@ export class CompletionService {
       const savedResult = await this.prismaService.result.create({
         data: {
           ...createResultDto,
+          userId,
         },
       });
 
