@@ -1,6 +1,6 @@
 import { Controller, Get, Request, UseGuards } from '@nestjs/common';
 import { MypageService } from './mypage.service';
-import { HistoryDto } from 'src/completion/dto/history.dto';
+import { HistoryDto } from 'src/mypage/dto/history.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RequestUser } from 'src/types/requestUser';
 import { Request as ExpressRequest } from 'express';

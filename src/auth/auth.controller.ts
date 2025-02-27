@@ -37,7 +37,7 @@ export class AuthController {
     } catch (error) {
       console.error(error);
       throw new HttpException(
-        'Failed to create user',
+        'Failed to sign in',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

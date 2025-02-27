@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AllergyTypes } from '@prisma/client';
+import { AllergyTypes, UserAllergy } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -25,23 +25,23 @@ export class AllergyService {
     allergies: { [key: string]: string },
   ) {
     try {
-      // 既存のユーザーアレルギー情報を削除（更新のため）
+      // Delete existing user allergy information (for update)
       await this.prismaService.userAllergy.deleteMany({
         where: { userId },
       });
 
-      // 新しいアレルギー情報を登録
+      // Register new allergy information
       const allergyEntries = Object.entries(allergies);
 
-      // アレルギー情報がない場合は早期リターン
+      // Early return if no allergy information
       if (allergyEntries.length === 0) {
         return {
           success: true,
-          message: 'アレルギー情報が更新されました（登録なし）',
+          message: 'Allergy information updated (no entries)',
         };
       }
 
-      // 各アレルギー情報をデータベースに保存
+      // Save each allergy information to database
       const createPromises = allergyEntries.map(([allergyId, severity]) => {
         return this.prismaService.userAllergy.create({
           data: {
@@ -52,16 +52,69 @@ export class AllergyService {
         });
       });
 
-      // すべての保存処理を並行して実行
+      // Execute all save operations in parallel
       await Promise.all(createPromises);
 
       return {
         success: true,
-        message: 'アレルギー情報が登録されました',
+        message: 'Allergy information registered',
         count: allergyEntries.length,
       };
     } catch (error) {
-      console.error('アレルギー情報の登録中にエラーが発生しました:', error);
+      console.error(
+        'Error occurred while registering allergy information:',
+        error,
+      );
+      throw error;
+    }
+  }
+
+  async getAllergyList(): Promise<AllergyTypes[]> {
+    try {
+      return await this.prismaService.allergyTypes.findMany();
+    } catch (error) {
+      console.error('Error occurred while retrieving allergy list:', error);
+      throw error;
+    }
+  }
+
+  async getUserAllergyList(userId: string): Promise<UserAllergy[]> {
+    try {
+      return await this.prismaService.userAllergy.findMany({
+        where: { userId },
+      });
+    } catch (error) {
+      console.error(
+        'Error occurred while retrieving user allergy list:',
+        error,
+      );
+      throw error;
+    }
+  }
+
+  async deleteUserAllergy(
+    userId: string,
+    allergyId: string,
+  ): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      await this.prismaService.userAllergy.delete({
+        where: {
+          userId_allergyId: {
+            // Correct format for composite unique constraint
+            userId: userId,
+            allergyId: allergyId,
+          },
+        },
+      });
+      return {
+        success: true,
+        message: 'Allergy information deleted',
+      };
+    } catch (error) {
+      console.error('Error occurred while deleting user allergy:', error);
       throw error;
     }
   }

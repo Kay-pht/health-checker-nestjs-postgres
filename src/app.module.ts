@@ -9,6 +9,7 @@ import { ResultModule } from './result/result.module';
 import { AuthModule } from './auth/auth.module';
 import { AllergyModule } from './allergy/allergy.module';
 import { GeminiModule } from './gemini/gemini.module';
+import { UserDashboardModule } from './user-dashboard/user-dashboard.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { GeminiModule } from './gemini/gemini.module';
     AuthModule,
     AllergyModule,
     GeminiModule,
+    UserDashboardModule,
   ],
   controllers: [],
   providers: [PrismaService],
