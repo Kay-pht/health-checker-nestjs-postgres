@@ -1,61 +1,98 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GeminiService {
-  constructor(private readonly configService: ConfigService) {}
+  private readonly logger = new Logger(GeminiService.name);
+  private readonly gemini: GoogleGenerativeAI;
+  private readonly modelName: string;
+  private readonly rolePrompt: string;
+  private readonly taskPrompt: string;
 
-  async getChatCompletion(
-    userPrompt: string,
-    gemini: GoogleGenerativeAI = new GoogleGenerativeAI(
-      this.configService.get('GEMINI_API_KEY') as string,
-    ),
-  ): Promise<any> {
-    const model = gemini.getGenerativeModel({
-      model: 'gemini-2.0-pro-exp-02-05',
-    });
-
-    const structuredPrompt = this.prompt(
-      userPrompt,
-      this.configService.get('ROLE_PROMPT')!,
-      this.configService.get('TASK_PROMPT')!,
+  constructor(private readonly configService: ConfigService) {
+    // Environment variables are already validated, so default values should not be used
+    this.gemini = new GoogleGenerativeAI(
+      this.configService.get<string>('gemini.apiKey') || '',
     );
-
-    const result = await model.generateContent(structuredPrompt);
-    console.log('result:', result);
-
-    // レスポンステキストからMarkdownのコードブロックを取り除く
-    const responseText = result.response.text();
-    const cleanedJson = responseText.replace(/```json\n|\n```|```/g, '').trim();
-
-    return cleanedJson;
-    // return responseText;
+    this.modelName = this.configService.get<string>(
+      'gemini.modelName',
+    ) as string;
+    this.rolePrompt = this.configService.get<string>(
+      'prompts.rolePrompt',
+    ) as string;
+    this.taskPrompt = this.configService.get<string>(
+      'prompts.taskPrompt',
+    ) as string;
   }
 
-  prompt = (
-    userPrompt: string,
-    rolePrompt: string,
-    taskPrompt: string,
-  ): string => {
-    // Geminiに適したプロンプト形式で構築
-    return `
-    ${rolePrompt || 'assistant'}
-    ${taskPrompt || 'hello'}
+  /**
+   * Get chat completion from Gemini AI using user prompt
+   * @param userPrompt Input prompt from user
+   * @returns Parsable JSON string
+   */
+  async getChatCompletion(userPrompt: string): Promise<string> {
+    try {
+      const model = this.gemini.getGenerativeModel({
+        model: this.modelName,
+      });
 
-    ユーザーの回答：
+      const structuredPrompt = this.buildPrompt(userPrompt);
+      this.logger.debug(`Sending prompt to Gemini: ${structuredPrompt}`);
+
+      const result = await model.generateContent(structuredPrompt);
+      const responseText = result.response.text();
+
+      // Remove Markdown code blocks from response text
+      const cleanedJson = this.cleanJsonResponse(responseText);
+
+      if (!cleanedJson) {
+        throw new InternalServerErrorException('Empty response returned');
+      }
+
+      return cleanedJson;
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(
+          `Error occurred during Gemini API call: ${error.message}`,
+          error.stack,
+        );
+        throw new InternalServerErrorException(
+          `Failed to get response from AI model: ${error.message}`,
+        );
+      }
+      throw error;
+    }
+  }
+
+  // Build structured prompt
+  private buildPrompt(userPrompt: string): string {
+    return `
+    ${this.rolePrompt}
+    ${this.taskPrompt}
+
+    User's response:
         ${JSON.stringify(userPrompt)}
 
-  以下のJSONスキーマに基づいた回答を生成してください。
-  純粋なJSONオブジェクトのみを返してください。Markdownの記法やコードブロック（\`\`\`）は使わないでください。
-  コメントや説明も含めないでください。
+  Please generate a response based on the following JSON schema.
+  Return only a pure JSON object. Do not use Markdown syntax or code blocks (\`\`\`).
+  Do not include comments or explanations.
 
     NutritionResult = {
-        'missingNutrients': Array<string>, // 不足している栄養素のリスト（最大4つ、最低1つ）
-        'recommendedFoods': Array<string>, // 推奨される食材のリスト（最低4品目）
-        'score': number // 食生活のスコア（100点満点）
+        'missingNutrients': Array<string>, // List of missing nutrients (max 4, min 1)
+        'recommendedFoods': Array<string>, // List of recommended foods (min 4 items)
+        'score': number // Diet score (out of 100)
         }
 
-  Return: NutritionResult（純粋なJSONオブジェクトのみ、バッククォートや説明文なし）`;
-  };
+  Return: NutritionResult (pure JSON object only, no backticks or explanatory text)`;
+  }
+
+  // Remove Markdown code blocks from response
+  private cleanJsonResponse(response: string): string {
+    return response.replace(/```json\n|\n```|```/g, '').trim();
+  }
 }
