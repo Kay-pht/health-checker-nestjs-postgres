@@ -8,6 +8,7 @@ import { MypageModule } from './mypage/mypage.module';
 import { ResultModule } from './result/result.module';
 import { AuthModule } from './auth/auth.module';
 import { AllergyModule } from './allergy/allergy.module';
+import { GeminiModule } from './gemini/gemini.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AllergyModule } from './allergy/allergy.module';
     ResultModule,
     AuthModule,
     AllergyModule,
+    GeminiModule,
   ],
   controllers: [],
   providers: [PrismaService],

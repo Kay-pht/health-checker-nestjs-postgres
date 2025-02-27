@@ -12,7 +12,7 @@ export class CompletionController {
   @Post()
   @UseGuards(AuthGuard('jwt'))
   postAnalyzeAnswer(
-    @Body('answer') answer: string,
+    @Body('answer') answer: any,
     @Request() req: ExpressRequest & { user: RequestUser },
   ): Promise<CreateResultDto | null> {
     return this.completionService.getAnalysis(answer, req.user.userId);

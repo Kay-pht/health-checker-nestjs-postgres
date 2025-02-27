@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { OpenaiService } from '../openai/openai.service';
 import { analyzedResponse } from 'src/types/analyzedResponse';
 import { CreateResultDto } from './dto/create-result.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { GeminiService } from 'src/gemini/gemini.service';
 
 @Injectable()
 export class CompletionService {
   constructor(
-    private readonly openaiService: OpenaiService,
+    // private readonly openaiService: OpenaiService,
+    private readonly geminiService: GeminiService,
     private readonly prismaService: PrismaService,
   ) {}
 
@@ -18,7 +19,8 @@ export class CompletionService {
     // TODO:completionFunc
     try {
       const response: string | null =
-        await this.openaiService.getChatCompletion(prompt);
+        // await this.openaiService.getChatCompletion(prompt);
+        await this.geminiService.getChatCompletion(prompt);
       console.log('response:', response);
       if (!response) {
         return null;
