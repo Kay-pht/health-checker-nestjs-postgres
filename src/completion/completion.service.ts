@@ -29,10 +29,8 @@ export class CompletionService {
         return null;
       }
 
-      // Parse response
       const parsedResponse = this.parseResponse(response);
 
-      // Save results to database
       const savedResult = await this.saveResult(parsedResponse, userId);
 
       return {
@@ -54,7 +52,7 @@ export class CompletionService {
     }
   }
 
-  // Parse response from AI mode
+  // Parse response from AI model
   private parseResponse(response: string): analyzedResponse {
     try {
       return JSON.parse(response) as analyzedResponse;

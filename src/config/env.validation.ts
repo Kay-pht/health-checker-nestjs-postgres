@@ -4,7 +4,7 @@ export interface EnvironmentVariables {
   GEMINI_API_KEY: string;
   ROLE_PROMPT: string;
   TASK_PROMPT: string;
-  // 他の環境変数もここに追加
+  // Add other environment variables here
 }
 
 export function validateEnv(): EnvironmentVariables {
@@ -14,17 +14,18 @@ export function validateEnv(): EnvironmentVariables {
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     ROLE_PROMPT: process.env.ROLE_PROMPT,
     TASK_PROMPT: process.env.TASK_PROMPT,
-    // 他の環境変数もここに追加
+    // Add other environment variables here
   };
 
-  // 不足している環境変数をチェック
+  // Check for missing environment variables
   const missingVars = Object.entries(requiredEnvVars)
     .filter(([, value]) => !value)
     .map(([key]) => key);
 
+  // Exit the application if environment variables are missing
   if (missingVars.length > 0) {
     logger.error(
-      `以下の環境変数が設定されていません: ${missingVars.join(', ')}`,
+      `The following environment variables are not set: ${missingVars.join(', ')}`,
     );
     process.exit(1);
   }
