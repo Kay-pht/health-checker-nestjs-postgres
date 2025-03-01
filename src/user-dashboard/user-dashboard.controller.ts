@@ -1,11 +1,11 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { UserDashboardService } from './user-dashboard.service';
 import { RequestUser } from 'src/types/requestUser';
 import { AuthGuard } from '@nestjs/passport';
 import { Request as ExpressRequest } from 'express';
 import { Request } from '@nestjs/common';
 import { UserDashboardDto } from './dto/userDashboard.dto';
-
+import { UpdateUserDashboardDto } from './dto/update-userDashboard.dto';
 @Controller('user-dashboard')
 export class UserDashboardController {
   constructor(private readonly userDashboardService: UserDashboardService) {}
@@ -23,5 +23,17 @@ export class UserDashboardController {
       console.error('Error fetching user dashboard data:', error);
       throw error;
     }
+  }
+
+  @Patch()
+  @UseGuards(AuthGuard('jwt'))
+  async updateUserDashboardData(
+    @Request() req: ExpressRequest & { user: RequestUser },
+    @Body() updateUserDashboardDto: UpdateUserDashboardDto,
+  ): Promise<UserDashboardDto> {
+    return this.userDashboardService.updateUserDashboardData(
+      req.user.userId,
+      updateUserDashboardDto,
+    );
   }
 }

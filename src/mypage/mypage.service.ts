@@ -20,6 +20,7 @@ export class MypageService {
       return [];
     }
     return historyResults.map((result) => ({
+      resultId: result.id,
       missingNutrients: result.missingNutrients,
       recommendedFoods: result.recommendedFoods,
       score: result.score,
