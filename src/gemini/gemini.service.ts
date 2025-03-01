@@ -17,16 +17,16 @@ export class GeminiService {
   constructor(private readonly configService: ConfigService) {
     // Environment variables are already validated, so default values should not be used
     this.gemini = new GoogleGenerativeAI(
-      this.configService.get<string>('gemini.apiKey') || '',
+      this.configService.get<string>('GEMINI_API_KEY') || '',
     );
     this.modelName = this.configService.get<string>(
-      'gemini.modelName',
+      'GEMINI_MODEL_NAME',
     ) as string;
     this.rolePrompt = this.configService.get<string>(
-      'prompts.rolePrompt',
+      'GEMINI_ROLE_PROMPT',
     ) as string;
     this.taskPrompt = this.configService.get<string>(
-      'prompts.taskPrompt',
+      'GEMINI_TASK_PROMPT',
     ) as string;
   }
 
@@ -78,7 +78,7 @@ export class GeminiService {
     User's response:
         ${JSON.stringify(userPrompt)}
 
-  Please generate a response based on the following JSON schema.
+  Please generate a response in Japanese based on the following JSON schema.
   Return only a pure JSON object. Do not use Markdown syntax or code blocks (\`\`\`).
   Do not include comments or explanations.
 
