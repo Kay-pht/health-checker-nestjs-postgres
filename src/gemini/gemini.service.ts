@@ -42,7 +42,6 @@ export class GeminiService {
       });
 
       const structuredPrompt = this.buildPrompt(userPrompt);
-      this.logger.debug(`Sending prompt to Gemini: ${structuredPrompt}`);
 
       const result = await model.generateContent(structuredPrompt);
       const responseText = result.response.text();

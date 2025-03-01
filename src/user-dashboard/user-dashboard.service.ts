@@ -1,11 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserDashboardDto } from './dto/userDashboard.dto';
-import { AllergyTypes, Result, UserAllergy } from '@prisma/client';
+import { AllergyTypes, Prisma, Result, UserAllergy } from '@prisma/client';
 import { UserWithRelations } from 'src/types/userWithRelations';
 import { AnalysisResult } from 'src/types/analysisResult';
 import {
-  // AllergyItemDto,
   AnalysisResultDto,
   UpdateUserDashboardDto,
 } from './dto/update-userDashboard.dto';
@@ -79,52 +78,29 @@ export class UserDashboardService {
     updateUserDashboardDto: UpdateUserDashboardDto,
   ): Promise<UserDashboardDto> {
     try {
-      await this.prismaService.$transaction(async (tx) => {
-        if (updateUserDashboardDto.userInfo) {
-          const dataToUpdate: UserInfoDto = {};
-
-          if (updateUserDashboardDto.userInfo.name) {
-            dataToUpdate.name = updateUserDashboardDto.userInfo.name;
+      await this.prismaService.$transaction(
+        async (tx) => {
+          if (updateUserDashboardDto.userInfo) {
+            await this.updateUserInfo(
+              userId,
+              updateUserDashboardDto.userInfo,
+              tx,
+            );
           }
-          if (updateUserDashboardDto.userInfo.email) {
-            dataToUpdate.email = updateUserDashboardDto.userInfo.email;
+          if (updateUserDashboardDto.analysisResults) {
+            await this.updateAnalysisResults(
+              userId,
+              updateUserDashboardDto.analysisResults,
+              tx,
+            );
           }
-          if (updateUserDashboardDto.userInfo.password) {
-            dataToUpdate.password = updateUserDashboardDto.userInfo.password;
-          }
-
-          await tx.user.update({
-            where: { id: userId },
-            data: dataToUpdate,
-          });
-        }
-        if (updateUserDashboardDto.analysisResults) {
-          const dataToUpdate: AnalysisResultDto = {
-            id: updateUserDashboardDto.analysisResults.id,
-          };
-
-          if (updateUserDashboardDto.analysisResults.missingNutrients) {
-            dataToUpdate.missingNutrients =
-              updateUserDashboardDto.analysisResults.missingNutrients;
-          }
-          if (updateUserDashboardDto.analysisResults.recommendedFoods) {
-            dataToUpdate.recommendedFoods =
-              updateUserDashboardDto.analysisResults.recommendedFoods;
-          }
-          if (updateUserDashboardDto.analysisResults.score) {
-            dataToUpdate.score = updateUserDashboardDto.analysisResults.score;
-          }
-
-          await tx.result.update({
-            where: {
-              id: updateUserDashboardDto.analysisResults.id,
-              userId: userId,
-            },
-            data: dataToUpdate,
-          });
-        }
-        // await this.updateUserAllergy(userId, updateUserDashboardDto.allergyList);
-      });
+          // await this.updateUserAllergy(userId, updateUserDashboardDto.allergyList);
+        },
+        {
+          timeout: 5000,
+          isolationLevel: 'ReadCommitted',
+        },
+      );
       return this.getUserDashboardData(userId);
     } catch (error) {
       console.error('Error updating user dashboard data:', error);
@@ -132,48 +108,53 @@ export class UserDashboardService {
     }
   }
 
-  // async updateUserInfo(userId: string, userInfo: UserInfoDto): Promise<void> {
-  //   const dataToUpdate: UserInfoDto = {};
+  async updateUserInfo(
+    userId: string,
+    userInfo: UserInfoDto,
+    tx: Prisma.TransactionClient,
+  ): Promise<void> {
+    const dataToUpdate: UserInfoDto = {};
 
-  // if (userInfo.name) {
-  //   dataToUpdate.name = userInfo.name;
-  // }
-  // if (userInfo.email) {
-  //   dataToUpdate.email = userInfo.email;
-  // }
-  // if (userInfo.password) {
-  //   dataToUpdate.password = userInfo.password;
-  // }
+    if (userInfo.name) {
+      dataToUpdate.name = userInfo.name;
+    }
+    if (userInfo.email) {
+      dataToUpdate.email = userInfo.email;
+    }
+    if (userInfo.password) {
+      dataToUpdate.password = userInfo.password;
+    }
 
-  // await this.prismaService.user.update({
-  //   where: { id: userId },
-  //   data: dataToUpdate,
-  // });
-  // }
+    await tx.user.update({
+      where: { id: userId },
+      data: dataToUpdate,
+    });
+  }
 
-  // async updateAnalysisResults(
-  //   userId: string,
-  //   analysisResults: AnalysisResultDto,
-  // ): Promise<void> {
-  //   const dataToUpdate: AnalysisResultDto = {
-  //     id: analysisResults.id,
-  //   };
+  async updateAnalysisResults(
+    userId: string,
+    analysisResults: AnalysisResultDto,
+    tx: Prisma.TransactionClient,
+  ): Promise<void> {
+    const dataToUpdate: AnalysisResultDto = {
+      id: analysisResults.id,
+    };
 
-  //   if (analysisResults.missingNutrients) {
-  //     dataToUpdate.missingNutrients = analysisResults.missingNutrients;
-  //   }
-  //   if (analysisResults.recommendedFoods) {
-  //     dataToUpdate.recommendedFoods = analysisResults.recommendedFoods;
-  //   }
-  //   if (analysisResults.score) {
-  //     dataToUpdate.score = analysisResults.score;
-  //   }
+    if (analysisResults.missingNutrients) {
+      dataToUpdate.missingNutrients = analysisResults.missingNutrients;
+    }
+    if (analysisResults.recommendedFoods) {
+      dataToUpdate.recommendedFoods = analysisResults.recommendedFoods;
+    }
+    if (analysisResults.score) {
+      dataToUpdate.score = analysisResults.score;
+    }
 
-  //   await this.prismaService.result.update({
-  //     where: { id: analysisResults.id, userId: userId },
-  //     data: dataToUpdate,
-  //   });
-  // }
+    await tx.result.update({
+      where: { id: analysisResults.id, userId: userId },
+      data: dataToUpdate,
+    });
+  }
 }
 
 // updateUserAllergy(userId: string, allergyList: AllergyItemDto[]) {}

@@ -22,8 +22,6 @@ export class CompletionService {
     userId: string,
   ): Promise<CreateResultDto | null> {
     try {
-      this.logger.log(`Analyzing prompt for user: ${userId}`);
-
       // Get response from AI model
       const response = await this.geminiService.getChatCompletion(prompt);
       if (!response) {
@@ -36,10 +34,6 @@ export class CompletionService {
 
       // Save results to database
       const savedResult = await this.saveResult(parsedResponse, userId);
-
-      this.logger.log(
-        `Analysis completed for user: ${userId} with score: ${savedResult.score}`,
-      );
 
       return {
         missingNutrients: savedResult.missingNutrients,
