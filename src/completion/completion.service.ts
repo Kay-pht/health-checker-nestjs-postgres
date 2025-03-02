@@ -6,7 +6,7 @@ import {
 import { analyzedResponse } from 'src/types/analyzedResponse';
 import { CreateResultDto } from './dto/create-result.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { GeminiService } from 'src/gemini/gemini.service';
+import { GeminiService } from '../gemini/gemini.service';
 
 @Injectable()
 export class CompletionService {
@@ -17,16 +17,15 @@ export class CompletionService {
     private readonly geminiService: GeminiService,
     private readonly prismaService: PrismaService,
   ) {}
-  async getAnalysis(
-    prompt: string,
-    userId: string,
-  ): Promise<CreateResultDto | null> {
+  async getAnalysis(prompt: string, userId: string): Promise<CreateResultDto> {
     try {
       // Get response from AI model
       const response = await this.geminiService.getChatCompletion(prompt);
       if (!response) {
         this.logger.warn('Empty response returned from AI model');
-        return null;
+        throw new InternalServerErrorException(
+          'Empty response returned from AI model',
+        );
       }
 
       const parsedResponse = this.parseResponse(response);
@@ -62,7 +61,7 @@ export class CompletionService {
   }
 
   // Save analysis results to database
-  private async saveResult(result: analyzedResponse, userId: string) {
+  async saveResult(result: analyzedResponse, userId: string) {
     const createResultDto: CreateResultDto = {
       missingNutrients: result.missingNutrients,
       recommendedFoods: result.recommendedFoods,
