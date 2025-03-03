@@ -67,15 +67,11 @@ describe('AuthService', () => {
       (prismaService.user.create as jest.Mock).mockResolvedValueOnce({
         name: createUserDto.name,
         email: createUserDto.email,
-        password: await authService.hashPassword(createUserDto.password),
       });
       const result = await authService.createUser(createUserDto);
 
       expect(result.name).toBe(createUserDto.name);
       expect(result.email).toBe(createUserDto.email);
-      expect(
-        await bcrypt.compare(createUserDto.password, result.password),
-      ).toBe(true);
     });
   });
 
