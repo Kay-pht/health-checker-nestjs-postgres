@@ -19,9 +19,7 @@ export class GeminiService {
     this.gemini = new GoogleGenerativeAI(
       this.configService.get<string>('GEMINI_API_KEY') || '',
     );
-    this.modelName = this.configService.get<string>(
-      'GEMINI_MODEL_NAME',
-    ) as string;
+    this.modelName = 'gemini-2.0-flash-thinking-exp-01-21';
     this.rolePrompt = this.configService.get<string>(
       'GEMINI_ROLE_PROMPT',
     ) as string;
