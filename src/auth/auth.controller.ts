@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpException,
-  HttpStatus,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from '@prisma/client';
@@ -15,31 +9,18 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  async signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
-    try {
-      const user = await this.authService.createUser(createUserDto);
-      return user;
-    } catch (error) {
-      console.error(error);
-      throw new HttpException(
-        'Failed to create user',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  @HttpCode(HttpStatus.CREATED)
+  async signUp(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<Omit<User, 'password'>> {
+    return this.authService.createUser(createUserDto);
   }
+
   @Post('signin')
+  @HttpCode(HttpStatus.OK)
   async signIn(
     @Body() credentialDto: CredentialDto,
   ): Promise<{ token: string }> {
-    try {
-      const user = await this.authService.signIn(credentialDto);
-      return user;
-    } catch (error) {
-      console.error(error);
-      throw new HttpException(
-        'Failed to sign in',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    return this.authService.signIn(credentialDto);
   }
 }

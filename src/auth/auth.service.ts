@@ -19,7 +19,9 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(
+    createUserDto: CreateUserDto,
+  ): Promise<Omit<User, 'password'>> {
     const { name, email, password } = createUserDto;
     const hashedPassword = await this.hashPassword(password);
 
@@ -31,7 +33,13 @@ export class AuthService {
           password: hashedPassword,
         },
       });
-      return user;
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
