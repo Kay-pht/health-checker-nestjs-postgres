@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { AllergyTypes, UserAllergy } from '@prisma/client';
+import { PrismaContextService } from 'src/prisma/prisma-context.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AllergyService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly prismaContextService: PrismaContextService,
+  ) {}
 
   async createAllergyType(name: string): Promise<AllergyTypes> {
     try {
@@ -25,41 +29,47 @@ export class AllergyService {
     allergies: { [key: string]: string },
   ) {
     try {
-      // Delete existing user allergy information (for update)
-      await this.prismaService.userAllergy.deleteMany({
-        where: { userId },
-      });
+      // プライズマコンテキストサービスを使用してユーザーコンテキストを設定
+      return await this.prismaContextService.setCurrentUser(
+        userId,
+        async () => {
+          // Delete existing user allergy information (for update)
+          await this.prismaService.userAllergy.deleteMany({
+            where: { userId },
+          });
 
-      // Register new allergy information
-      const allergyEntries = Object.entries(allergies);
+          // Register new allergy information
+          const allergyEntries = Object.entries(allergies);
 
-      // Early return if no allergy information
-      if (allergyEntries.length === 0) {
-        return {
-          success: true,
-          message: 'Allergy information updated (no entries)',
-        };
-      }
+          // Early return if no allergy information
+          if (allergyEntries.length === 0) {
+            return {
+              success: true,
+              message: 'Allergy information updated (no entries)',
+            };
+          }
 
-      // Save each allergy information to database
-      const createPromises = allergyEntries.map(([allergyId, severity]) => {
-        return this.prismaService.userAllergy.create({
-          data: {
-            userId,
-            allergyId,
-            severity,
-          },
-        });
-      });
+          // Save each allergy information to database
+          const createPromises = allergyEntries.map(([allergyId, severity]) => {
+            return this.prismaService.userAllergy.create({
+              data: {
+                userId,
+                allergyId,
+                severity,
+              },
+            });
+          });
 
-      // Execute all save operations in parallel
-      await Promise.all(createPromises);
+          // Execute all save operations in parallel
+          await Promise.all(createPromises);
 
-      return {
-        success: true,
-        message: 'Allergy information registered',
-        count: allergyEntries.length,
-      };
+          return {
+            success: true,
+            message: 'Allergy information registered',
+            count: allergyEntries.length,
+          };
+        },
+      );
     } catch (error) {
       console.error(
         'Error occurred while registering allergy information:',
@@ -80,9 +90,15 @@ export class AllergyService {
 
   async getUserAllergyList(userId: string): Promise<UserAllergy[]> {
     try {
-      return await this.prismaService.userAllergy.findMany({
-        where: { userId },
-      });
+      // プライズマコンテキストサービスを使用してユーザーコンテキストを設定
+      return await this.prismaContextService.setCurrentUser(
+        userId,
+        async () => {
+          return this.prismaService.userAllergy.findMany({
+            where: { userId },
+          });
+        },
+      );
     } catch (error) {
       console.error(
         'Error occurred while retrieving user allergy list:',
@@ -100,19 +116,25 @@ export class AllergyService {
     message: string;
   }> {
     try {
-      await this.prismaService.userAllergy.delete({
-        where: {
-          userId_allergyId: {
-            // Correct format for composite unique constraint
-            userId: userId,
-            allergyId: allergyId,
-          },
+      // プライズマコンテキストサービスを使用してユーザーコンテキストを設定
+      return await this.prismaContextService.setCurrentUser(
+        userId,
+        async () => {
+          await this.prismaService.userAllergy.delete({
+            where: {
+              userId_allergyId: {
+                // Correct format for composite unique constraint
+                userId: userId,
+                allergyId: allergyId,
+              },
+            },
+          });
+          return {
+            success: true,
+            message: 'Allergy information deleted',
+          };
         },
-      });
-      return {
-        success: true,
-        message: 'Allergy information deleted',
-      };
+      );
     } catch (error) {
       console.error('Error occurred while deleting user allergy:', error);
       throw error;
