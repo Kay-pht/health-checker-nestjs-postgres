@@ -18,6 +18,11 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "src-ai/prisma/prisma-context.service.spec.ts",
+    "src-ai/prisma/prisma.service.spec.ts"
+  ],
   "exclude": ["node_modules", "dist", "src-ai"]
 }
